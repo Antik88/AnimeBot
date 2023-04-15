@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup as BS
 from fake_useragent import UserAgent
 from random import randint as rand
 
-BASE_URL = "https://shikimori.me/animes/kind/tv"
+
 HEADERS = {"User-Agent": UserAgent().random}
 
 class Title:
@@ -16,45 +16,48 @@ class Title:
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        async with session.get(BASE_URL, headers=HEADERS) as response:
-            r = await aiohttp.StreamReader.read(response.content)
-            soup = BS(r, "html.parser")
-
-            result = {
-                "title" : []
+        result = {
+            "title" : []
             }
+        for page in range(0,15):
+            BASE_URL = "https://shikimori.me/animes/kind/tv/page/" + format(page)
+            async with session.get(BASE_URL, headers=HEADERS) as response:
+                r = await aiohttp.StreamReader.read(response.content)
+                soup = BS(r, "html.parser")
 
-            items = soup.find("div", {"class": "cc-entries"}).find_all("article")
-            for item in items:
-                title = Title()
-                names = item.find("span", {"class": "name-ru"})
-                for name in names:
-                    title.name = name.text
-        
-                dates = item.find("span", {"class": "right"})
-                for date in dates:
-                    title.date = date.text
+                try:
+                    main = soup.find("section", {"class": "l-content b-search-results"}).find_all("article")
+                except: 
+                    pass
 
-                imgs = item.find_all("img")
-                for img in imgs:
-                    title.img = img.get("src")
-                
-                result["title"].append(title.__dict__)
+                for item in main:
+                    title = Title()
+                    names = item.find("span", {"class": "name-ru"})
+                    for name in names:
+                        title.name = name.text
             
+                    dates = item.find("span", {"class": "right"})
+                    for date in dates:
+                        title.date = date.text
+
+                    imgs = item.find_all("img")
+                    for img in imgs:
+                        title.img = img.get("src")
+
+                    result["title"].append(title.__dict__)
+
             write(result, 'data.json')            
             
 def getRandAnime(data):
-    title = Title
-    title_id = rand(0,len(data['title'])-1)
+    title = Title()
+    title_data = data['title']
+    id = rand(0,len(title_data)-1)
 
-    title.name = data['title'][title_id]["name"]
-    title.date = data['title'][title_id]["date"]
-    title.img = data['title'][title_id]["img"]
+    title.name = title_data[id]["name"]
+    title.date = title_data[id]["date"]
+    title.img = title_data[id]["img"]
 
-    # data['title'].pop(title_id)
-
-    # if(len(data['title']) == 2):
-    #     data = read('data.json')
+    del data['title'][id]
 
     return title
 
@@ -67,8 +70,6 @@ def write(data, filename):
 def read(filename):
     with open(filename, 'r', encoding = 'UTF-8') as file:
         return json.load(file)
-
-data = read('data.json')
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()

@@ -12,6 +12,7 @@ HELP_COMMAND = """
 👍 anime - как-то аниме
 🤓 help - список команд
 """
+data = parser.read('data.json')
 
 kb = ReplyKeyboardMarkup(resize_keyboard=True)
 get_btn = KeyboardButton('',)
@@ -32,10 +33,10 @@ async def start_hendler(message: types.Message):
 @dp.message_handler(text='🤓 help')
 async def help_command(message: types.Message):
     await message.answer(text=HELP_COMMAND)
-
-@dp.message_handler(text='👍 anime')
+  
+@dp.message_handler(text='👍 anime') 
 async def send_img(message: types.Message):
-    title = parser.getRandAnime(parser.data)
+    title = parser.getRandAnime(data)
     caption = f'{title.name}\nГод: {title.date}'
     await bot.send_photo(message.from_user.id, title.img, caption=caption)
 
