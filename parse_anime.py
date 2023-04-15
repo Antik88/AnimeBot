@@ -1,7 +1,6 @@
 import asyncio
 import aiohttp
 import json
-from pprint import pprint
 from bs4 import BeautifulSoup as BS
 from fake_useragent import UserAgent
 
@@ -41,9 +40,7 @@ async def main():
                 
                 result["title"].append(title.__dict__)
             
-            write(result, 'data.json')
-            pprint(read('data.json'))
-            
+            write(result, 'data.json')            
                
 def write(data, filename):
     data = json.dumps(data)
