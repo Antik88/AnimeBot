@@ -37,7 +37,14 @@ async def help_command(message: types.Message):
 @dp.message_handler(text='👍 anime') 
 async def send_img(message: types.Message):
     title = parser.getRandAnime(data)
-    caption = f'{title.name}\nГод: {title.date}'
+    # caption = f"{title.name_ru}\nГод: {title.date}"
+    caption = f"""{title.name_ru}
+Год: {title.date}
+Эпизодов: {title.episodes}
+{title.description}
+    """
+    #!!! оишбка Message caption is too long
+    
     await bot.send_photo(message.from_user.id, title.img, caption=caption)
 
 # @dp.message_handler(text='➡️ next')
