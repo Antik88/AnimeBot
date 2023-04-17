@@ -5,6 +5,13 @@ import parse_anime as parser
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
+import asyncio
+import aiohttp
+import json
+from bs4 import BeautifulSoup as BS
+from fake_useragent import UserAgent
+
+HEADERS = {"User-Agent": UserAgent().random}
 TOKEN = "6197474322:AAEWCPB5AG2uDOR6KjmP3xwONOg4xetIuvA"
 MSG = "Смотрел ли ты аниме сегодя, {}?"
 HELP_COMMAND = """
@@ -37,14 +44,13 @@ async def help_command(message: types.Message):
 @dp.message_handler(text='👍 anime') 
 async def send_img(message: types.Message):
     title = parser.getRandAnime(data)
-    # caption = f"{title.name_ru}\nГод: {title.date}"
+    description = title.description.split('.')[0] + title.description.split('.')[1]
     caption = f"""{title.name_ru}
 Год: {title.date}
 Эпизодов: {title.episodes}
-{title.description}
-    """
-    #!!! оишбка Message caption is too long
-    
+Рейтинг: {title.rating}
+Описание: {description}
+    """  
     await bot.send_photo(message.from_user.id, title.img, caption=caption)
 
 # @dp.message_handler(text='➡️ next')

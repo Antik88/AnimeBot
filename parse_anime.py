@@ -18,6 +18,8 @@ class Title:
         self.img = ""
         self.episodes = ""
         self.description = ""
+        self.genre = []
+        self.rating = ""
 
 async def main():
     async with aiohttp.ClientSession() as session:
@@ -59,18 +61,6 @@ async def main():
 
                     result["title"].append(title.__dict__)  
 
-        # for anime in result['title']:
-        #     url = anime['url']
-        #     async with session.get(url, headers=HEADERS) as response:
-        #         r = await aiohttp.StreamReader.read(response.content)
-        #         soup = BS(r, "html.parser")
-
-        #         info = soup.find_all("div", {"class": "value"})
-                
-        #         # anime['episodes'] = info[1].text
-
-        #         print(info[1].text)
-        
         write(result, 'data.json')
 
 async def add_more_info():
@@ -83,14 +73,14 @@ async def add_more_info():
 
                 info = soup.find_all("div", {"class": "value"})
                 description = soup.find("div", {"class": "text"})
+                genres = soup.find_all("span", {"class": "genre-ru"})
+                rating = soup.find("div", {"class": "score-value score-9"})
 
-                # print(description.text)
-
+                for genre in genres:
+                    title['genre'].append(genre.text)
+                title['rating'] = rating.text
                 title['episodes'] = info[1].text
                 title['description'] = description.text
-
-                # print(info[1].text +" "+ format(conuter))
-                # conuter+= 1
 
         write(data, 'data.json')
 
@@ -105,6 +95,8 @@ def getRandAnime(data):
     title.img = title_data[id]["img"]
     title.episodes = title_data[id]["episodes"]
     title.description = title_data[id]["description"]
+    title.genre = title_data[id]["genre"]
+    title.rating = title_data[id]["rating"]
 
     del data['title'][id]
 
@@ -122,5 +114,5 @@ def read(filename):
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    # loop.run_until_complete(main())
+    loop.run_until_complete(main())
     loop.run_until_complete(add_more_info())
