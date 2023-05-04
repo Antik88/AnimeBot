@@ -20,6 +20,7 @@ class Title:
         self.description = ""
         self.genre = []
         self.rating = ""
+        self.screenshots = []
 
 async def main():
     async with aiohttp.ClientSession() as session:
@@ -84,11 +85,32 @@ async def add_more_info():
 
         write(data, 'data.json')
 
+async def add_screenshots():
+    async with aiohttp.ClientSession() as session:
+        data = read('data.json')
+        for title in data['title']:
+             async with session.get(title['url'] + "/resources", headers=HEADERS) as response:
+                r = await aiohttp.StreamReader.read(response.content)
+                soup = BS(r, "html.parser")
 
-def getRandAnime(data):
+                div = soup.find("div", {"class": "c-screenshots"})
+
+                for i in range(1,6): 
+                    imgs = div.find_all("a", {"class": "c-screenshot b-image entry-" + f"{i}"})
+                    for item in imgs:
+                        title['screenshots'].append(item.get("href"))
+        
+    write(data, 'data.json')
+
+
+
+def getRandAnime(data, used):
     title = Title()
     title_data = data['title']
     id = rand(0,len(title_data)-1)
+
+    if id in used:
+        id = rand(0,len(title_data)-1)+1
 
     title.name_ru = title_data[id]["name_ru"]
     title.date = title_data[id]["date"]
@@ -98,7 +120,8 @@ def getRandAnime(data):
     title.genre = title_data[id]["genre"]
     title.rating = title_data[id]["rating"]
 
-    del data['title'][id]
+    # del data['title'][id]
+    used.append(id)
 
     return title
 
@@ -114,5 +137,6 @@ def read(filename):
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    loop.run_until_complete(add_more_info())
+    #loop.run_until_complete(main())
+    #loop.run_until_complete(add_more_info())
+    loop.run_until_complete(add_screenshots())
