@@ -119,6 +119,7 @@ def getRandAnime(data, used):
     title.description = title_data[id]["description"]
     title.genre = title_data[id]["genre"]
     title.rating = title_data[id]["rating"]
+    title.id = title_data[id]["id"]
 
     # del data['title'][id]
     used.append(id)

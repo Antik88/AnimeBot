@@ -23,14 +23,14 @@ kb.add(KeyboardButton('🤓 help')).insert(KeyboardButton('👍 anime'))
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
 
-cd_walk = CallbackData("dun_w", "title_id")
+title_back = CallbackData("pref","title_id")
 
-@dp.callback_query_handler(cd_walk.filter())
+@dp.callback_query_handler(title_back.filter())
 async def button_press(call: types.CallbackQuery, callback_data: dict):
-    name = callback_data.get('title_id')
+    id = callback_data.get('title_id')
     media = types.MediaGroup()
     for title in data['title']:
-        if title['name_ru'] == name:
+        if title['id'] == id:
             for i in range(0,5):
                 media.attach_photo(title['screenshots'][i])
     await call.bot.send_media_group(call.message.chat.id, media=media)
@@ -55,6 +55,8 @@ async def send_img(message: types.Message):
     description = title.description.split('.')[0] + title.description.split('.')[1]
     genres = ""
     
+    title.name_ru = title.name_ru.replace(':','')
+
     for i in title.genre:
         genres += i.lower() + ' '
     
@@ -68,9 +70,7 @@ async def send_img(message: types.Message):
     ilkb = InlineKeyboardMarkup(row_width=1)
     line_btn1 = InlineKeyboardButton(text="👀 смотреть", url=f"https://www.google.com/search?q={title.name_ru}")
     get_imgs = InlineKeyboardButton(f"🖼 кадры из аниме",
-                             callback_data=cd_walk.new(
-                                 title_id=title.name_ru,
-                             ))
+                             callback_data=title_back.new(title_id=title.id))
     ilkb.add(line_btn1).add(get_imgs)
     await bot.send_photo(message.from_user.id, title.img, caption=caption, reply_markup=ilkb)
 
